@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { margin-bottom: 20px; }
+    label { display: inline-block; width: 100px; }
+    input { padding: 5px; margin-bottom: 10px; }
+    button { padding: 10px 15px; background-color: #28a745; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #218838; }
+    pre { background-color: #f8f9fa; padding: 10px; border: 1px solid #ddd; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>User Authentication</h1>
+
+  <h2>Register</h2>
+  <form id="register">
+    <label for="reg-firstname">FirstName</label>
+    <input type="text" id="reg-firstname" name="firstname" required><br><br>
+
+    <label for="reg-lastname">LastName</label>
+    <input type="text" id="reg-lastname" name="lastname" required><br><br>
+
+    <label for="reg-email">Email</label>
+    <input type="email" id="reg-email" name="email" required><br><br>
+
+    <label for="reg-password">Password</label>
+    <input type="password" id="reg-password" name="password" required><br><br>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <h2>Login</h2>
+  <form id="login">
+    <label for="login-email">Email</label>
+    <input type="email" id="login-email" name="email" required><br><br>
+
+    <label for="login-password">Password</label>
+    <input type="password" id="login-password" name="password" required><br><br>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <button id="btn-profile" type="button">Get Profile</button>
+  <button id="btn-users" type="button">Get Users</button>
+
+  <pre id="result"></pre>
+
+  <script>
+    const resultBox = document.getElementById('result');
+
+    function showResult(data) {
+      resultBox.textContent =
+        typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    }
+
+    async function jsonRequest(url, method = 'GET', bodyObj) {
+      const options = {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      };
+      if (bodyObj) options.body = JSON.stringify(bodyObj);
+
+      const res = await fetch(url, options);
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = await res.text();
+      }
+
+      if (!res.ok) {
+        const message =
+          typeof data === 'string'
+            ? data
+            : data && data.message
+            ? data.message
+            : JSON.stringify(data);
+        throw new Error(message);
+      }
+
+      return data;
+    }
+
+    document
+      .getElementById('register')
+      .addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+          firstname: document.getElementById('reg-firstname').value,
+          lastname: document.getElementById('reg-lastname').value,
+          email: document.getElementById('reg-email').value,
+          password: document.getElementById('reg-password').value,
+        };
+        try {
+          const data = await jsonRequest('/register', 'POST', body);
+          showResult(data);
+        } catch (err) {
+          showResult('ERROR: ' + err.message);
+        }
+      });
+
+    document
+      .getElementById('login')
+      .addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+          email: document.getElementById('login-email').value,
+          password: document.getElementById('login-password').value,
+        };
+        try {
+          const data = await jsonRequest('/login', 'POST', body);
+          showResult(data);
+        } catch (err) {
+          showResult('ERROR: ' + err.message);
+        }
+      });
+
+    document
+      .getElementById('btn-profile')
+      .addEventListener('click', async () => {
+        try {
+          const data = await jsonRequest('/profile', 'GET');
+          showResult(data);
+        } catch (err) {
+          showResult('ERROR: ' + err.message);
+        }
+      });
+
+    document
+      .getElementById('btn-users')
+      .addEventListener('click', async () => {
+        try {
+          const data = await jsonRequest('/users', 'GET');
+          showResult(data);
+        } catch (err) {
+          showResult('ERROR: ' + err.message);
+        }
+      });
+  </script>
+</body>
+</html>
