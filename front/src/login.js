@@ -10,22 +10,28 @@ function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(
+      const res = await axios.post(
         "http://localhost:4000/login",
         { email, password },
         { withCredentials: true }
       );
 
-      
+      const user = res.data.user;
+
+      if (!user || (!user.id && !user.Id)) {
+        console.error("Login response missing user object:", res.data);
+        alert("Login succeeded but user data missing in response");
+        return;
+      }
+
+      localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("isAuthenticated", "true");
 
-      
       navigate("/profile");
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     }
   };
-
 
   return (
     <div className="auth-container">
@@ -49,11 +55,9 @@ function LoginPage() {
       <p>
         Don&apos;t have an account?{" "}
         <Link to="/register">Register now</Link>
-        
       </p>
     </div>
   );
 }
 
 export default LoginPage;
-

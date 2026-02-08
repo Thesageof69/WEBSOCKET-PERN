@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import LoginPage from "./login";
 import RegisterPage from "./register";
 import ProfilePage from "./ProfilePage";
+import ChatPage from "./Chatpage";
 
 function PrivateRoute({ children }) {
   const authed = localStorage.getItem("isAuthenticated") === "true";
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
         <Route
           path="/profile"
           element={
@@ -22,6 +24,16 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <ChatPage />
+            </PrivateRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
