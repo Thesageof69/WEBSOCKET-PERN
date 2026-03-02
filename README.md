@@ -84,3 +84,4 @@ The frontend runs on `http://localhost:3000` and the backend on `http://localhos
 |---------|-------------|
 | `npm start` | Start server with Node |
 | `npm run dev` | Start server with Nodemon (auto-reload) |
+
