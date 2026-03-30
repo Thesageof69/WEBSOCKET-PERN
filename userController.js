@@ -1,6 +1,8 @@
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userModel = require("./userModel.js");
+const { hasUnreadFrom } = require("./messageModel");
+
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -101,21 +103,31 @@ async function loginUser(req, res, next) {
 async function listUsers(req, res, next) {
   try {
     const users = await userModel.getAllUsers();
-    const filteredUsers = users.map(user => ({
-      id: user.id,
-      FirstName: user.first_name,
-      LastName: user.last_name,
-      Email: user.email,
-    }));
+    const meId = req.user.id;
+
+    const enrichedUsers = await Promise.all(
+      users.map(async (user) => {
+        const hasUnread = await hasUnreadFrom(user.id, meId); 
+        return {
+          id: user.id,
+          FirstName: user.first_name,
+          LastName: user.last_name,
+          Email: user.email,
+          hasUnread,
+        };
+      })
+    );
+
     return res.status(200).json({
       success: true,
-      count: filteredUsers.length,
-      users : filteredUsers,
+      count: enrichedUsers.length,
+      users: enrichedUsers,
     });
   } catch (err) {
     next(err);
   }
 }
+
 
 async function getProfile(req, res, next) {
   try {
